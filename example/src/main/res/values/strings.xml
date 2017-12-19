@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Upload Library Example</string>
+
+    <string name="btn_test_login">Test login flow</string>
 </resources>
