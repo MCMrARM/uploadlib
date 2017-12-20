@@ -24,7 +24,12 @@ public abstract class SimpleLoginFileUploadProvider implements FileUploadProvide
         else
             mLoginController.setActivity(activity);
 
-        handleLogInFlow(mLoginController);
+        SimpleLoginActivityController controller = mLoginController;
+        Thread thread = new Thread(() -> {
+            handleLogInFlow(controller);
+        });
+        thread.setName("Log In Flow Handler");
+        thread.start();
     }
 
 }

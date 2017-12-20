@@ -13,6 +13,7 @@ import io.mrarm.uploadlib.FileUploadRequest;
 import io.mrarm.uploadlib.FileUploadUserContext;
 import io.mrarm.uploadlib.ui.login.SimpleLoginActivityController;
 import io.mrarm.uploadlib.ui.login.SimpleLoginFileUploadProvider;
+import io.mrarm.uploadlib.ui.login.WebBrowserController;
 
 public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
 
@@ -47,6 +48,13 @@ public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
     @Override
     public void handleLogInFlow(SimpleLoginActivityController controller) {
         controller.setLoadingState();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+        WebBrowserController webController = new WebBrowserController();
+        webController.setUrl("http://example.com/");
+        controller.setWebState(webController);
     }
 
 }

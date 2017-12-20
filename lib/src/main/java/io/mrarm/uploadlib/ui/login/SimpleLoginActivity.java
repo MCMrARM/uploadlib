@@ -3,6 +3,7 @@ package io.mrarm.uploadlib.ui.login;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.webkit.WebView;
 import android.widget.ProgressBar;
 
 import java.util.UUID;
@@ -40,6 +41,10 @@ public class SimpleLoginActivity extends AppCompatActivity {
     public void setViewLoading() {
         ProgressBar bar = new ProgressBar(this);
         setContentView(bar);
+    }
+
+    public void setViewWeb(WebView webView) {
+        setContentView(webView);
     }
 
 }
