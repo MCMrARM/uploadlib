@@ -52,8 +52,8 @@ public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
         }
-        WebBrowserController webController = new WebBrowserController();
-        webController.setUrl("http://example.com/");
+        WebBrowserController webController = new WebBrowserController(controller);
+        webController.loadUrl("http://example.com/");
         controller.setWebState(webController);
     }
 
