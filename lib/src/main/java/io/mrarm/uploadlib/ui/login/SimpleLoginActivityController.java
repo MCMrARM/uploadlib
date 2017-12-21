@@ -24,11 +24,18 @@ public class SimpleLoginActivityController {
     }
 
     public synchronized void setActivity(SimpleLoginActivity activity) {
+        SimpleLoginActivity oldActivity = this.activity.get();
         this.activity = new WeakReference<>(activity);
-        setupActivity(activity);
-    }
-
-    private synchronized void setupActivity(SimpleLoginActivity activity) {
+        if (oldActivity != null) {
+            for (WebBrowserController controller : attachedWebBrowserControllers) {
+                oldActivity.detachWebView(controller.getWebView(oldActivity));
+                controller.resetWebView();
+            }
+            if (currentWebBrowserController != null) {
+                oldActivity.detachWebView(currentWebBrowserController.getWebView(oldActivity));
+                currentWebBrowserController.resetWebView();
+            }
+        }
         for (WebBrowserController controller : attachedWebBrowserControllers)
             activity.attachWebView(controller.getOrCreateWebView(activity));
         setState(currentState);
@@ -41,10 +48,13 @@ public class SimpleLoginActivityController {
             if (state == STATE_LOADING) {
                 activity.setViewLoading();
             } else if (state == STATE_WEB_BROWSER) {
+                if (!attachedWebBrowserControllers.contains(currentWebBrowserController))
+                    activity.attachWebView(currentWebBrowserController
+                            .getOrCreateWebView(activity));
                 activity.setViewWeb(currentWebBrowserController.getOrCreateWebView(activity));
             } else if (state == STATE_FINISHED) {
                 activity.finish();
-                activity = null;
+                this.activity = null;
             }
         });
     }
@@ -63,7 +73,8 @@ public class SimpleLoginActivityController {
     synchronized void detachWebController(WebBrowserController controller) {
         attachedWebBrowserControllers.remove(controller);
         runWithActivity((SimpleLoginActivity activity) -> {
-            activity.detachWebView(controller.getOrCreateWebView(activity));
+            activity.detachWebView(controller.getWebView(activity));
+            controller.resetWebView();
         });
     }
 
@@ -73,15 +84,11 @@ public class SimpleLoginActivityController {
                     !attachedWebBrowserControllers.contains(currentWebBrowserController)) {
                 WebBrowserController oldController = currentWebBrowserController;
                 runWithActivity((SimpleLoginActivity activity) -> {
-                    activity.detachWebView(oldController.getOrCreateWebView(activity));
+                    activity.detachWebView(oldController.getWebView(activity));
+                    controller.resetWebView();
                 });
             }
             currentWebBrowserController = controller;
-            if (!attachedWebBrowserControllers.contains(controller)) {
-                runWithActivity((SimpleLoginActivity activity) -> {
-                    activity.attachWebView(controller.getOrCreateWebView(activity));
-                });
-            }
             setState(STATE_WEB_BROWSER);
         }
         if (!controller.isAsync())

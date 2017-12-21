@@ -13,6 +13,7 @@ public class WebBrowserController {
     private final boolean async;
     private final Queue<Runnable> userThreadQueue;
     private WebView webView;
+    private boolean isWebViewReleased = true;
     private ControllerWebViewClient webViewClient = new ControllerWebViewClient(this);
     private boolean isFinished;
     private final Object isFinishedLock;
@@ -43,14 +44,28 @@ public class WebBrowserController {
         return async;
     }
 
-    synchronized WebView getOrCreateWebView(Context ctx) {
+    synchronized WebView getWebView(Context ctx) {
         if (webView != null && webView.getContext() != ctx)
-            throw new RuntimeException("A WebView was already created for another Context");
+            throw new RuntimeException("The WebView is created for another Context");
+        return webView;
+    }
+
+    synchronized WebView getOrCreateWebView(Context ctx) {
+        if (webView != null && webView.getContext() != ctx) {
+            if (!isWebViewReleased)
+                throw new RuntimeException("A WebView was already created for another Context");
+            webView = null;
+        }
         if (webView == null) {
             webView = new WebView(ctx);
+            isWebViewReleased = false;
             setupWebView(webView);
         }
         return webView;
+    }
+
+    synchronized void resetWebView() {
+        isWebViewReleased = true;
     }
 
     private void setupWebView(WebView webView) {
@@ -143,6 +158,8 @@ public class WebBrowserController {
         if (webView != null) {
             webView.post(() -> {
                 synchronized (this) {
+                    if (this.webView != webView)
+                        return;
                     lambda.run(webView);
                 }
             });
