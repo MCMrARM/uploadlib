@@ -1,5 +1,6 @@
 package io.mrarm.uploadlib.ui.login;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -12,7 +13,24 @@ public class ControllerWebViewClient extends WebViewClient {
 
     private static final String TAG = "ControllerWebViewClient";
 
+    private final WebBrowserController browser;
     private final Queue<Runnable> urlWaitList = new LinkedList<>();
+    private WebBrowserListener userListener;
+    private Queue<Runnable> userListenerQueue;
+
+    public ControllerWebViewClient(WebBrowserController browser) {
+        this.browser = browser;
+    }
+
+    public void setUserListener(WebBrowserListener client, Queue<Runnable> queue) {
+        userListener = client;
+        userListenerQueue = queue;
+    }
+
+    @Override
+    public void onPageStarted(WebView view, String url, Bitmap favicon) {
+        runUserCallback((WebBrowserListener client) -> client.onPageStarted(browser, url, favicon));
+    }
 
     @Override
     public void onPageFinished(WebView view, String url) {
@@ -21,6 +39,12 @@ public class ControllerWebViewClient extends WebViewClient {
             if (!urlWaitList.isEmpty())
                 urlWaitList.remove().run();
         }
+        runUserCallback((WebBrowserListener client) -> client.onPageFinished(browser, url));
+    }
+
+    @Override
+    public void onLoadResource(WebView view, String url) {
+        runUserCallback((WebBrowserListener client) -> client.onLoadResource(browser, url));
     }
 
     public synchronized void waitForUrl(String url, Runnable runnable) {
@@ -30,20 +54,53 @@ public class ControllerWebViewClient extends WebViewClient {
 
     public void waitForUrl(String url) {
         final AtomicBoolean done = new AtomicBoolean(false);
+        Object lk;
+        synchronized (this) {
+            if (userListenerQueue != null)
+                lk = userListenerQueue;
+            else
+                lk = done;
+        }
         waitForUrl(url, () -> {
-            synchronized (done) {
+            synchronized (lk) {
                 done.set(true);
-                done.notify();
+                lk.notify();
             }
         });
-        synchronized (done) {
+        synchronized (lk) {
             while (!done.get()) {
+                if (lk != done)
+                    browser.runUserThreadCallbacks();
                 try {
-                    done.wait();
+                    lk.wait();
                 } catch (InterruptedException ignored) {
                 }
             }
         }
+    }
+
+    private synchronized void runUserCallback(UserCallbackRunnable runnable) {
+        if (userListener == null)
+            return;
+
+        if (userListenerQueue != null) {
+            synchronized (userListenerQueue) {
+                userListenerQueue.add(() -> {
+                    synchronized (this) {
+                        if (userListener == null)
+                            return;
+                        runnable.run(userListener);
+                    }
+                });
+                userListenerQueue.notify();
+            }
+        } else {
+            runnable.run(userListener);
+        }
+    }
+
+    private interface UserCallbackRunnable {
+        void run(WebBrowserListener runnable);
     }
 
 }

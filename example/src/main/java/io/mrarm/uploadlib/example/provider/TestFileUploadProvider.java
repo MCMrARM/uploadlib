@@ -2,8 +2,10 @@ package io.mrarm.uploadlib.example.provider;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -14,6 +16,7 @@ import io.mrarm.uploadlib.FileUploadUserContext;
 import io.mrarm.uploadlib.ui.login.SimpleLoginActivityController;
 import io.mrarm.uploadlib.ui.login.SimpleLoginFileUploadProvider;
 import io.mrarm.uploadlib.ui.login.WebBrowserController;
+import io.mrarm.uploadlib.ui.login.WebBrowserListener;
 
 public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
 
@@ -53,8 +56,17 @@ public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
         } catch (InterruptedException e) {
         }
         WebBrowserController webController = new WebBrowserController(controller);
+        webController.setListener(new WebBrowserListener() {
+            @Override
+            public void onPageStarted(WebBrowserController browser, String url, Bitmap favicon) {
+                Log.d("TestFileUploadProvider", "onPageStarted: " + url);
+                if (url.equals("http://www.iana.org/domains/example"))
+                    webController.finish();
+            }
+        });
         webController.loadUrl("http://example.com/");
         controller.setWebState(webController);
+        controller.setLoadingState();
     }
 
 }

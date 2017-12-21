@@ -63,7 +63,7 @@ public class SimpleLoginActivityController {
         });
     }
 
-    public void setWebState(WebBrowserController controller, boolean async) {
+    public void setWebState(WebBrowserController controller) {
         synchronized (this) {
             if (currentWebBrowserController != null &&
                     !attachedWebBrowserControllers.contains(currentWebBrowserController)) {
@@ -80,12 +80,8 @@ public class SimpleLoginActivityController {
             }
             setState(STATE_WEB_BROWSER);
         }
-        if (!async)
+        if (!controller.isAsync())
             controller.waitForCompletion();
-    }
-
-    public void setWebState(WebBrowserController controller) {
-        setWebState(controller, false);
     }
 
 

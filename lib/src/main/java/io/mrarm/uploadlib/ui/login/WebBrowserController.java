@@ -3,23 +3,44 @@ package io.mrarm.uploadlib.ui.login;
 import android.content.Context;
 import android.webkit.WebView;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class WebBrowserController {
 
     private SimpleLoginActivityController activityController;
     private int activityAttachmentCount = 0;
+    private final boolean async;
+    private final Queue<Runnable> userThreadQueue;
     private WebView webView;
-    private ControllerWebViewClient webViewClient = new ControllerWebViewClient();
+    private ControllerWebViewClient webViewClient = new ControllerWebViewClient(this);
     private boolean isFinished;
-    private final Object isFinishedLock = new Object();
+    private final Object isFinishedLock;
 
     private String url;
 
-    public WebBrowserController(SimpleLoginActivityController controller) {
+    public WebBrowserController(SimpleLoginActivityController controller, boolean async) {
         activityController = controller;
+        this.async = async;
+        if (!async) {
+            userThreadQueue = new LinkedList<>();
+            isFinishedLock = userThreadQueue;
+        } else {
+            userThreadQueue = null;
+            isFinishedLock = new Object();
+        }
+    }
+
+    public WebBrowserController(SimpleLoginActivityController controller) {
+        this(controller, false);
     }
 
     public synchronized WebView getWebView() {
         return webView;
+    }
+
+    public boolean isAsync() {
+        return async;
     }
 
     synchronized WebView getOrCreateWebView(Context ctx) {
@@ -38,9 +59,19 @@ public class WebBrowserController {
             webView.loadUrl(url);
     }
 
+    synchronized void runUserThreadCallbacks() {
+        if (userThreadQueue == null)
+            return;
+        synchronized (userThreadQueue) {
+            while (!userThreadQueue.isEmpty())
+                userThreadQueue.remove().run();
+        }
+    }
+
     void waitForCompletion() {
         synchronized (isFinishedLock) {
             while (!isFinished) {
+                runUserThreadCallbacks();
                 try {
                     isFinishedLock.wait();
                 } catch (InterruptedException ignored) {
@@ -73,6 +104,17 @@ public class WebBrowserController {
         activityAttachmentCount--;
         if (activityAttachmentCount == 0)
             activityController.detachWebController(this);
+    }
+
+    /**
+     * Sets the user listener for this controller.
+     *
+     * If the 'async' option was not set for this client in the constructor (it's not set by
+     * default), this all methods from the client will be ran on the user thread.
+     * @param listener the listener to set
+     */
+    public void setListener(WebBrowserListener listener) {
+        webViewClient.setUserListener(listener, userThreadQueue);
     }
 
     /**
