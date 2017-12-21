@@ -1,4 +1,4 @@
-package io.mrarm.uploadlib.ui.login;
+package io.mrarm.uploadlib.ui.web;
 
 import android.util.Log;
 
@@ -6,9 +6,11 @@ import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SimpleLoginActivityController {
+import io.mrarm.uploadlib.ui.login.SimpleLoginActivity;
 
-    private static final String TAG = "SimpleLoginActivity";
+public class WebActivityController {
+
+    private static final String TAG = "WebActivityController";
 
     private static final int STATE_LOADING = 0;
     private static final int STATE_WEB_BROWSER = 1;
@@ -19,7 +21,7 @@ public class SimpleLoginActivityController {
     private WebBrowserController currentWebBrowserController = null;
     private final Set<WebBrowserController> attachedWebBrowserControllers = new HashSet<>();
 
-    public SimpleLoginActivityController(SimpleLoginActivity activity) {
+    public WebActivityController(SimpleLoginActivity activity) {
         this.activity = new WeakReference<>(activity);
     }
 

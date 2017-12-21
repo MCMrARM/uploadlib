@@ -3,7 +3,6 @@
     package="io.mrarm.uploadlib">
 
     <application>
-        <activity android:name=".ui.webAction.WebActionActivity" />
         <activity android:name=".ui.login.SimpleLoginActivity"></activity>
     </application>
 

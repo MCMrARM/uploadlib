@@ -1,4 +1,4 @@
-package io.mrarm.uploadlib.ui.login;
+package io.mrarm.uploadlib.ui.web;
 
 import android.graphics.Bitmap;
 

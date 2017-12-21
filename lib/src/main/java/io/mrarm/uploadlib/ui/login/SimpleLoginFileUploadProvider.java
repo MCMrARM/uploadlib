@@ -4,10 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 
 import io.mrarm.uploadlib.FileUploadProvider;
+import io.mrarm.uploadlib.ui.web.WebActivityController;
 
 public abstract class SimpleLoginFileUploadProvider implements FileUploadProvider {
 
-    private SimpleLoginActivityController mLoginController;
+    private WebActivityController mLoginWebController;
 
     @Override
     public void startLogInFlow(Context ctx) {
@@ -16,25 +17,25 @@ public abstract class SimpleLoginFileUploadProvider implements FileUploadProvide
         ctx.startActivity(intent);
     }
 
-    public abstract void handleLogInFlow(SimpleLoginActivityController controller);
+    public abstract void handleLogInFlow(WebActivityController controller);
 
     synchronized void onLogInActivityStarted(SimpleLoginActivity activity) {
-        if (mLoginController == null) {
-            mLoginController = new SimpleLoginActivityController(activity);
+        if (mLoginWebController == null) {
+            mLoginWebController = new WebActivityController(activity);
 
-            SimpleLoginActivityController controller = mLoginController;
+            WebActivityController controller = mLoginWebController;
             Thread thread = new Thread(() -> {
                 handleLogInFlow(controller);
                 controller.setFinished();
                 synchronized (this) {
-                    if (mLoginController == controller)
-                        mLoginController = null;
+                    if (mLoginWebController == controller)
+                        mLoginWebController = null;
                 }
             });
             thread.setName("Log In Flow Handler");
             thread.start();
         } else {
-            mLoginController.setActivity(activity);
+            mLoginWebController.setActivity(activity);
         }
     }
 

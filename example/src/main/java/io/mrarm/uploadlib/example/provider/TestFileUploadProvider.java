@@ -13,10 +13,10 @@ import java.util.UUID;
 
 import io.mrarm.uploadlib.FileUploadRequest;
 import io.mrarm.uploadlib.FileUploadUserContext;
-import io.mrarm.uploadlib.ui.login.SimpleLoginActivityController;
+import io.mrarm.uploadlib.ui.web.WebActivityController;
 import io.mrarm.uploadlib.ui.login.SimpleLoginFileUploadProvider;
-import io.mrarm.uploadlib.ui.login.WebBrowserController;
-import io.mrarm.uploadlib.ui.login.WebBrowserListener;
+import io.mrarm.uploadlib.ui.web.WebBrowserController;
+import io.mrarm.uploadlib.ui.web.WebBrowserListener;
 
 public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
 
@@ -49,7 +49,7 @@ public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
     }
 
     @Override
-    public void handleLogInFlow(SimpleLoginActivityController controller) {
+    public void handleLogInFlow(WebActivityController controller) {
         controller.setLoadingState();
         try {
             Thread.sleep(1000);

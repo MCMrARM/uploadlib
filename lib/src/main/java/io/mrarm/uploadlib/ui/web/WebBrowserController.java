@@ -1,4 +1,4 @@
-package io.mrarm.uploadlib.ui.login;
+package io.mrarm.uploadlib.ui.web;
 
 import android.content.Context;
 import android.webkit.WebView;
@@ -8,7 +8,7 @@ import java.util.Queue;
 
 public class WebBrowserController {
 
-    private SimpleLoginActivityController activityController;
+    private WebActivityController activityController;
     private int activityAttachmentCount = 0;
     private final boolean async;
     private final Queue<Runnable> userThreadQueue;
@@ -20,7 +20,7 @@ public class WebBrowserController {
 
     private String url;
 
-    public WebBrowserController(SimpleLoginActivityController controller, boolean async) {
+    public WebBrowserController(WebActivityController controller, boolean async) {
         activityController = controller;
         this.async = async;
         if (!async) {
@@ -32,7 +32,7 @@ public class WebBrowserController {
         }
     }
 
-    public WebBrowserController(SimpleLoginActivityController controller) {
+    public WebBrowserController(WebActivityController controller) {
         this(controller, false);
     }
 
