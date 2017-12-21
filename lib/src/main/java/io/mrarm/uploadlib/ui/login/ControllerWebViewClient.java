@@ -79,20 +79,26 @@ public class ControllerWebViewClient extends WebViewClient {
         }
     }
 
-    private synchronized void runUserCallback(UserCallbackRunnable runnable) {
-        if (userListener == null)
-            return;
+    private void runUserCallback(UserCallbackRunnable runnable) {
+        Queue<Runnable> queue;
+        synchronized(this) {
+            if (userListener == null)
+                return;
+            queue = this.userListenerQueue;
+        }
 
-        if (userListenerQueue != null) {
-            synchronized (userListenerQueue) {
-                userListenerQueue.add(() -> {
+        if (queue != null) {
+            synchronized (queue) {
+                queue.add(() -> {
+                    WebBrowserListener listener;
                     synchronized (this) {
                         if (userListener == null)
                             return;
-                        runnable.run(userListener);
+                        listener = userListener;
                     }
+                    runnable.run(listener);
                 });
-                userListenerQueue.notify();
+                queue.notify();
             }
         } else {
             runnable.run(userListener);

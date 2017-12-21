@@ -24,7 +24,7 @@ public class SimpleLoginActivityController {
     }
 
     public synchronized void setActivity(SimpleLoginActivity activity) {
-        SimpleLoginActivity oldActivity = this.activity.get();
+        SimpleLoginActivity oldActivity = this.activity != null ? this.activity.get() : null;
         this.activity = new WeakReference<>(activity);
         if (oldActivity != null) {
             for (WebBrowserController controller : attachedWebBrowserControllers) {
