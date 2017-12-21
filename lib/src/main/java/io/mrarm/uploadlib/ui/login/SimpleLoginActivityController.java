@@ -12,6 +12,7 @@ public class SimpleLoginActivityController {
 
     private static final int STATE_LOADING = 0;
     private static final int STATE_WEB_BROWSER = 1;
+    private static final int STATE_FINISHED = -1;
 
     private WeakReference<SimpleLoginActivity> activity;
     private int currentState = STATE_LOADING;
@@ -41,6 +42,9 @@ public class SimpleLoginActivityController {
                 activity.setViewLoading();
             } else if (state == STATE_WEB_BROWSER) {
                 activity.setViewWeb(currentWebBrowserController.getOrCreateWebView(activity));
+            } else if (state == STATE_FINISHED) {
+                activity.finish();
+                activity = null;
             }
         });
     }
@@ -82,6 +86,10 @@ public class SimpleLoginActivityController {
         }
         if (!controller.isAsync())
             controller.waitForCompletion();
+    }
+
+    public void setFinished() {
+        setState(STATE_FINISHED);
     }
 
 
