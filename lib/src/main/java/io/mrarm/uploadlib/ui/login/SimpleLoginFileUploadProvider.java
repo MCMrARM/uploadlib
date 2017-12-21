@@ -18,7 +18,7 @@ public abstract class SimpleLoginFileUploadProvider implements FileUploadProvide
 
     public abstract void handleLogInFlow(SimpleLoginActivityController controller);
 
-    void onLogInActivityStarted(SimpleLoginActivity activity) {
+    synchronized void onLogInActivityStarted(SimpleLoginActivity activity) {
         if (mLoginController == null) {
             mLoginController = new SimpleLoginActivityController(activity);
 
@@ -26,6 +26,10 @@ public abstract class SimpleLoginFileUploadProvider implements FileUploadProvide
             Thread thread = new Thread(() -> {
                 handleLogInFlow(controller);
                 controller.setFinished();
+                synchronized (this) {
+                    if (mLoginController == controller)
+                        mLoginController = null;
+                }
             });
             thread.setName("Log In Flow Handler");
             thread.start();
