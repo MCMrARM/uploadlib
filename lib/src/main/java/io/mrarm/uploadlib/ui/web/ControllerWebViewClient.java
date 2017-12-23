@@ -52,7 +52,7 @@ public class ControllerWebViewClient extends WebViewClient {
         urlWaitList.add(runnable);
     }
 
-    public void waitForUrl(String url) {
+    public void waitForUrl(String url) throws InterruptedException {
         final AtomicBoolean done = new AtomicBoolean(false);
         Object lk;
         synchronized (this) {
@@ -71,10 +71,7 @@ public class ControllerWebViewClient extends WebViewClient {
             while (!done.get()) {
                 if (lk != done)
                     browser.runUserThreadCallbacks();
-                try {
-                    lk.wait();
-                } catch (InterruptedException ignored) {
-                }
+                lk.wait();
             }
         }
     }

@@ -17,7 +17,8 @@ public abstract class SimpleLoginFileUploadProvider implements FileUploadProvide
         ctx.startActivity(intent);
     }
 
-    public abstract void handleLogInFlow(WebActivityController controller);
+    public abstract void handleLogInFlow(WebActivityController controller)
+            throws InterruptedException;
 
     synchronized void onLogInActivityStarted(SimpleLoginActivity activity) {
         if (mLoginWebController == null) {
@@ -25,7 +26,10 @@ public abstract class SimpleLoginFileUploadProvider implements FileUploadProvide
 
             WebActivityController controller = mLoginWebController;
             Thread thread = new Thread(() -> {
-                handleLogInFlow(controller);
+                try {
+                    handleLogInFlow(controller);
+                } catch (InterruptedException ignored) {
+                }
                 controller.setFinished();
                 synchronized (this) {
                     if (mLoginWebController == controller)

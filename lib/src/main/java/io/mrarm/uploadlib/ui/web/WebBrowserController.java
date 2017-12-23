@@ -83,14 +83,11 @@ public class WebBrowserController {
         }
     }
 
-    void waitForCompletion() {
+    void waitForCompletion() throws InterruptedException {
         synchronized (isFinishedLock) {
             while (!isFinished) {
                 runUserThreadCallbacks();
-                try {
-                    isFinishedLock.wait();
-                } catch (InterruptedException ignored) {
-                }
+                isFinishedLock.wait();
             }
         }
     }
@@ -145,7 +142,7 @@ public class WebBrowserController {
      * Sets the specified url and waits for it to load.
      * @param url the url to load
      */
-    public void loadUrl(String url) {
+    public void loadUrl(String url) throws InterruptedException {
         addAttachment();
         setUrl(url);
         webViewClient.waitForUrl(url);

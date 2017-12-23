@@ -49,12 +49,9 @@ public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
     }
 
     @Override
-    public void handleLogInFlow(WebActivityController controller) {
+    public void handleLogInFlow(WebActivityController controller) throws InterruptedException {
         controller.setLoadingState();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-        }
+        Thread.sleep(1000);
         WebBrowserController webController = new WebBrowserController(controller);
         webController.setListener(new WebBrowserListener() {
             @Override

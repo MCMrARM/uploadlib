@@ -80,7 +80,7 @@ public class WebActivityController {
         });
     }
 
-    public void setWebState(WebBrowserController controller) {
+    public void setWebState(WebBrowserController controller) throws InterruptedException {
         synchronized (this) {
             if (currentWebBrowserController != null &&
                     !attachedWebBrowserControllers.contains(currentWebBrowserController)) {
