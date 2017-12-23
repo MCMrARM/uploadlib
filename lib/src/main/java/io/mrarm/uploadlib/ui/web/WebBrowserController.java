@@ -1,6 +1,8 @@
 package io.mrarm.uploadlib.ui.web;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.webkit.CookieManager;
 import android.webkit.WebView;
 
 import java.util.LinkedList;
@@ -17,6 +19,8 @@ public class WebBrowserController {
     private ControllerWebViewClient webViewClient = new ControllerWebViewClient(this);
     private boolean isFinished;
     private final Object isFinishedLock;
+    private WebViewCookieHandle cookiesHandle;
+    private boolean cookiesEnabled;
 
     private String url;
 
@@ -72,6 +76,9 @@ public class WebBrowserController {
         webView.setWebViewClient(webViewClient);
         if (url != null)
             webView.loadUrl(url);
+        if (cookiesEnabled && !cookiesHandle.isObtained())
+            throw new RuntimeException("The cookie handle got released");
+        CookieManager.getInstance().setAcceptCookie(cookiesEnabled);
     }
 
     synchronized void runUserThreadCallbacks() {
@@ -147,6 +154,28 @@ public class WebBrowserController {
         setUrl(url);
         webViewClient.waitForUrl(url);
         removeAttachment();
+    }
+
+    /**
+     * Enables cookies for this Web Browser.
+     * @param handle the handle to allow you to enable cookies
+     */
+    public synchronized void setCookiesEnabled(@NonNull WebViewCookieHandle handle)
+            throws InterruptedException {
+        if (!handle.isObtained())
+            throw new RuntimeException("You must obtain the handle first");
+        cookiesEnabled = true;
+        cookiesHandle = handle;
+        runWithWebView((WebView webView) -> CookieManager.getInstance().setAcceptCookie(true));
+    }
+
+    /**
+     * Disables cookies for this Web Browser.
+     */
+    public void setCookiesDisabled() {
+        cookiesEnabled = false;
+        cookiesHandle = null;
+        runWithWebView((WebView webView) -> CookieManager.getInstance().setAcceptCookie(false));
     }
 
 

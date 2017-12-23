@@ -17,6 +17,7 @@ import io.mrarm.uploadlib.ui.web.WebActivityController;
 import io.mrarm.uploadlib.ui.login.SimpleLoginFileUploadProvider;
 import io.mrarm.uploadlib.ui.web.WebBrowserController;
 import io.mrarm.uploadlib.ui.web.WebBrowserListener;
+import io.mrarm.uploadlib.ui.web.WebViewCookieHandle;
 
 public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
 
@@ -50,20 +51,26 @@ public class TestFileUploadProvider extends SimpleLoginFileUploadProvider {
 
     @Override
     public void handleLogInFlow(WebActivityController controller) throws InterruptedException {
-        controller.setLoadingState();
-        Thread.sleep(1000);
-        WebBrowserController webController = new WebBrowserController(controller);
-        webController.setListener(new WebBrowserListener() {
-            @Override
-            public void onPageStarted(WebBrowserController browser, String url, Bitmap favicon) {
-                Log.d("TestFileUploadProvider", "onPageStarted: " + url);
-                if (url.equals("http://www.iana.org/domains/example"))
-                    webController.finish();
-            }
-        });
-        webController.loadUrl("http://example.com/");
-        controller.setWebState(webController);
-        controller.setLoadingState();
+        WebViewCookieHandle cookieHandle = WebViewCookieHandle.obtainHandle();
+        try {
+            controller.setLoadingState();
+            Thread.sleep(1000);
+            WebBrowserController webController = new WebBrowserController(controller);
+            webController.setCookiesEnabled(cookieHandle);
+            webController.setListener(new WebBrowserListener() {
+                @Override
+                public void onPageStarted(WebBrowserController browser, String url, Bitmap favicon) {
+                    Log.d("TestFileUploadProvider", "onPageStarted: " + url);
+                    if (url.equals("http://www.iana.org/domains/example"))
+                        webController.finish();
+                }
+            });
+            webController.loadUrl("http://example.com/");
+            controller.setWebState(webController);
+            controller.setLoadingState();
+        } finally {
+            cookieHandle.release();
+        }
     }
 
 }
