@@ -22,7 +22,7 @@ public class WebActivityController {
     private final Set<WebBrowserController> attachedWebBrowserControllers = new HashSet<>();
 
     public WebActivityController(SimpleLoginActivity activity) {
-        this.activity = new WeakReference<>(activity);
+        setActivity(activity);
     }
 
     public synchronized void setActivity(SimpleLoginActivity activity) {
