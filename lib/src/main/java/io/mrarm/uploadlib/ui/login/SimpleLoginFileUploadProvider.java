@@ -2,6 +2,7 @@ package io.mrarm.uploadlib.ui.login;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.VisibleForTesting;
 
 import io.mrarm.uploadlib.FileUploadProvider;
 import io.mrarm.uploadlib.ui.web.WebActivityController;
@@ -59,6 +60,14 @@ public abstract class SimpleLoginFileUploadProvider implements FileUploadProvide
             } else {
                 mLoginWebController.setActivity(activity);
             }
+        }
+    }
+
+    @VisibleForTesting
+    public void waitForLogInFlow() throws InterruptedException {
+        synchronized (currentLoginWebControllerLock) {
+            while (mLoginWebController != null)
+                currentLoginWebControllerLock.wait();
         }
     }
 
