@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -25,14 +24,11 @@ public interface FileUploadProvider {
      * Uploads a file.
      * @param ctx Android context used for any additional UIs, optional
      * @param userContext the user to upload the file as, null for anonymous uploads
-     * @param filename file name hint
-     * @param mimeType file mime type hint
-     * @param stream file data
+     * @param data the data to upload
      * @return the upload request that will be completed asynchronously
      */
     FileUploadRequest upload(@Nullable Context ctx, @Nullable FileUploadUserContext userContext,
-                             @Nullable String filename, @Nullable String mimeType,
-                             @NonNull InputStream stream);
+                             @NonNull UploadData data);
 
     /**
      * Checks if this file upload provider supports log in (accounts).
