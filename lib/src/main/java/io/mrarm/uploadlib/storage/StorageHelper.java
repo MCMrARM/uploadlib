@@ -7,6 +7,22 @@ import java.io.File;
 public class StorageHelper {
 
     /**
+     * Deletes recursively a directory.
+     * @param file the directory to delete recursively
+     */
+    public static void deleteRecursive(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files == null)
+                return;
+            for (File ch : files)
+                deleteRecursive(ch);
+        } else {
+            file.delete();
+        }
+    }
+
+    /**
      * This is the function that you should call when starting the application/class before reading
      * the file. This function allows proper rollback of a file operation.
      */
