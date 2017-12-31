@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.mrarm.uploadlib.FileUploadProvider;
 import io.mrarm.uploadlib.FileUploadUserContext;
 
 /**
@@ -23,18 +24,26 @@ import io.mrarm.uploadlib.FileUploadUserContext;
  */
 public class UserStorageManager<T extends FileUploadUserContext & Serializable> {
 
+    private static final String DEFAULT_FILENAME = "users.ser";
+
     private Set<T> users = new HashSet<>();
 
-    private File mFilePath;
+    private File filePath;
+    private boolean canCreateDir = false;
 
     /**
      * Creates the manager with the specified file as the storage.
      * @param dbPath the path to the file in which the user data will be saved
      */
-    UserStorageManager(File dbPath) {
-        mFilePath = dbPath;
+    public UserStorageManager(File dbPath) {
+        filePath = dbPath;
         StorageHelper.checkFileState(dbPath);
         load();
+    }
+
+    public UserStorageManager(StorageManager storageManager, FileUploadProvider provider) {
+        this(new File(storageManager.getDataDir(provider), DEFAULT_FILENAME));
+        canCreateDir = true;
     }
 
     /**
@@ -66,7 +75,7 @@ public class UserStorageManager<T extends FileUploadUserContext & Serializable> 
     @SuppressWarnings("unchecked")
     private synchronized void load() {
         try {
-            FileInputStream stream = new FileInputStream(mFilePath);
+            FileInputStream stream = new FileInputStream(filePath);
             BufferedInputStream bufferedStream = new BufferedInputStream(stream);
             ObjectInputStream objectStream = new ObjectInputStream(bufferedStream);
             users = (Set<T>) objectStream.readObject();
@@ -77,10 +86,12 @@ public class UserStorageManager<T extends FileUploadUserContext & Serializable> 
     }
 
     private synchronized void store() {
-        StorageHelper.startFileOperation(mFilePath);
+        if (canCreateDir)
+            filePath.getParentFile().mkdir();
+        StorageHelper.startFileOperation(filePath);
         boolean success = false;
         try {
-            FileOutputStream stream = new FileOutputStream(mFilePath);
+            FileOutputStream stream = new FileOutputStream(filePath);
             BufferedOutputStream bufferedStream = new BufferedOutputStream(stream);
             ObjectOutputStream objectStream = new ObjectOutputStream(bufferedStream);
             objectStream.writeObject(users);
@@ -90,9 +101,9 @@ public class UserStorageManager<T extends FileUploadUserContext & Serializable> 
             e.printStackTrace();
         } finally {
             if (success)
-                StorageHelper.finishFileOperation(mFilePath);
+                StorageHelper.finishFileOperation(filePath);
             else
-                StorageHelper.abortFileOperation(mFilePath);
+                StorageHelper.abortFileOperation(filePath);
         }
     }
 
