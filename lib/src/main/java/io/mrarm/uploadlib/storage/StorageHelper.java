@@ -1,10 +1,28 @@
 package io.mrarm.uploadlib.storage;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 
 public class StorageHelper {
+
+    /**
+     * Closes the specified stream silently.
+     * @param stream the stream to close
+     */
+    public static void closeSilently(@Nullable Closeable stream) {
+        if (stream == null)
+            return;
+        try {
+            stream.close();
+        } catch (IOException e) {
+            Log.w("StorageHelper", "closeSilently: IOException");
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Deletes recursively a directory.

@@ -74,14 +74,17 @@ public class UserStorageManager<T extends FileUploadUserContext & Serializable> 
 
     @SuppressWarnings("unchecked")
     private synchronized void load() {
+        FileInputStream stream = null;
         try {
-            FileInputStream stream = new FileInputStream(filePath);
+            stream = new FileInputStream(filePath);
             BufferedInputStream bufferedStream = new BufferedInputStream(stream);
             ObjectInputStream objectStream = new ObjectInputStream(bufferedStream);
             users = (Set<T>) objectStream.readObject();
             objectStream.close();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+        } finally {
+            StorageHelper.closeSilently(stream);
         }
     }
 
@@ -90,8 +93,9 @@ public class UserStorageManager<T extends FileUploadUserContext & Serializable> 
             filePath.getParentFile().mkdir();
         StorageHelper.startFileOperation(filePath);
         boolean success = false;
+        FileOutputStream stream = null;
         try {
-            FileOutputStream stream = new FileOutputStream(filePath);
+            stream = new FileOutputStream(filePath);
             BufferedOutputStream bufferedStream = new BufferedOutputStream(stream);
             ObjectOutputStream objectStream = new ObjectOutputStream(bufferedStream);
             objectStream.writeObject(users);
@@ -100,6 +104,7 @@ public class UserStorageManager<T extends FileUploadUserContext & Serializable> 
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            StorageHelper.closeSilently(stream);
             if (success)
                 StorageHelper.finishFileOperation(filePath);
             else
